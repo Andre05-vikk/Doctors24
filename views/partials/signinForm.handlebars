@@ -1,0 +1,39 @@
+<form id="signin-form">
+    <div class="mb-3">
+        <input type="text" class="form-control" id="signin-email" placeholder="Enter your email" required>
+    </div>
+    <div class="mb-3">
+        <input type="password" class="form-control" id="signin-password" placeholder="Enter password" required>
+    </div>
+    <div id="signin-error" class="alert alert-danger mt-3" style="display:none;">Invalid email or password</div>
+    <div class="text-end">
+        <button type="submit" class="btn btn-primary">Sign In</button>
+    </div>
+</form>
+
+<script>
+    document.getElementById('signin-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const email = e.target.querySelector('#signin-email').value;
+        const password = e.target.querySelector('#signin-password').value;
+
+        const res = await fetch('/api/sessions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email, password})
+        });
+
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            const err = document.getElementById('signin-error');
+            const errorMessage = await res.json().then(data => data.message).catch(() => 'Incorrect username or password.');
+            err.innerText = errorMessage || 'Something went wrong. Try again later.';
+            err.style.display = 'block';
+        }
+    });
+
+        const modal = document.getElementById('signin-modal');
+        modal.addEventListener('shown.bs.modal', () => modal.removeAttribute('aria-hidden'));
+        modal.addEventListener('hidden.bs.modal', () => modal.setAttribute('aria-hidden', 'true'));
+</script>
