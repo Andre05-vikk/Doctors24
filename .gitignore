@@ -1,0 +1,6 @@
+node_modules
+.idea
+prisma/Doctors24.db
+qodana.sarif.json
+qodana.yaml
+.env

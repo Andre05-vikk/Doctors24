@@ -1,0 +1,54 @@
+<form id="signin-form">
+    <div class="mb-3">
+        <input type="text" class="form-control" id="signin-email" placeholder="Enter your email" required>
+    </div>
+    <div class="mb-3">
+        <input type="password" class="form-control" id="signin-password" placeholder="Enter password" required>
+    </div>
+    <div id="signin-error" class="alert alert-danger mt-3" style="display:none;">Invalid email or password</div>
+    <div class="text-end">
+        <button type="submit" class="btn btn-primary">Sign In</button>
+    </div>
+</form>
+
+<script>
+    document.getElementById('signin-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const email = e.target.querySelector('#signin-email').value;
+        const password = e.target.querySelector('#signin-password').value;
+
+        const res = await fetch('/api/sessions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email, password})
+        });
+
+       if (res.ok) {
+            window.location.reload();
+        } else {
+            const err = document.getElementById('signin-error');
+            err.style = undefined;
+            let errorMessage;
+            
+            switch (res.status) {
+                case 401:
+                    errorMessage = 'Invalid email or password';
+                    break;
+                case 429:
+                    errorMessage = 'Too many login attempts. Please try again later';
+                    break;
+                case 400:
+                    errorMessage = 'Please provide both email and password';
+                    break;
+                default:
+                    errorMessage = 'Something went wrong. Please try again later';
+            }
+            
+            err.innerText = errorMessage;
+        }
+    });
+
+        const modal = document.getElementById('signin-modal');
+        modal.addEventListener('shown.bs.modal', () => modal.removeAttribute('aria-hidden'));
+        modal.addEventListener('hidden.bs.modal', () => modal.setAttribute('aria-hidden', 'true'));
+</script>
