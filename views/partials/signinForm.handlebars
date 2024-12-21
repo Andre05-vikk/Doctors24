@@ -1,9 +1,10 @@
-<form id="signin-form">
+<form id="signin-form" method="POST">
+    <input type="hidden" name="_csrf" id="signinCsrfToken" value="{{csrfToken}}">
     <div class="mb-3">
-        <input type="text" class="form-control" id="signin-email" placeholder="Enter your email" required>
+        <input type="text" class="form-control" id="signin-email" placeholder="Enter your email" required value="test@test.com">
     </div>
     <div class="mb-3">
-        <input type="password" class="form-control" id="signin-password" placeholder="Enter password" required>
+        <input type="password" class="form-control" id="signin-password" placeholder="Enter password" required value="Test123!@#">
     </div>
     <div id="signin-error" class="alert alert-danger mt-3" style="display:none;">Invalid email or password</div>
     <div class="text-end">
@@ -19,12 +20,15 @@
 
         const res = await fetch('/api/sessions', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': document.getElementById('signinCsrfToken').value
+            },
             body: JSON.stringify({email, password})
         });
 
-       if (res.ok) {
-            window.location.reload();
+        if (res.ok) {
+            window.location.href = '/protected';
         } else {
             const err = document.getElementById('signin-error');
             err.style = undefined;

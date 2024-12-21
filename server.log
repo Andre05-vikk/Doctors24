@@ -1,0 +1,19 @@
+Server running on http://localhost:3000
+Signup error: PrismaClientKnownRequestError: 
+Invalid `prisma.user.create()` invocation in
+/Users/andrepark/WebstormProjects/Doctors24/app.js:124:44
+
+  121 const hashedPassword = await bcrypt.hash(password, 10);
+  122 
+  123 // Create user
+→ 124 const user = await prisma.user.create(
+Unique constraint failed on the fields: (`username`)
+    at Mn.handleRequestError (/Users/andrepark/WebstormProjects/Doctors24/node_modules/@prisma/client/runtime/library.js:121:7338)
+    at Mn.handleAndLogRequestError (/Users/andrepark/WebstormProjects/Doctors24/node_modules/@prisma/client/runtime/library.js:121:6663)
+    at Mn.request (/Users/andrepark/WebstormProjects/Doctors24/node_modules/@prisma/client/runtime/library.js:121:6370)
+    at async l (/Users/andrepark/WebstormProjects/Doctors24/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async /Users/andrepark/WebstormProjects/Doctors24/app.js:124:26 {
+  code: 'P2002',
+  clientVersion: '6.0.1',
+  meta: { modelName: 'User', target: [ 'username' ] }
+}

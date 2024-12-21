@@ -1,0 +1,21 @@
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card mt-5">
+        <div class="card-body text-center">
+          <h2 class="text-danger mb-4">
+            <i class="fas fa-exclamation-circle"></i>
+            Error
+          </h2>
+          <p class="lead">{{message}}</p>
+          <div class="mt-4">
+            <a href="/" class="btn btn-primary">Return to Home</a>
+            {{#if showRetry}}
+              <a href="{{retryLink}}" class="btn btn-outline-primary ms-2">Try Again</a>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 
