@@ -1,6 +1,6 @@
 datasource db {
   provider = "sqlite"
-  url      = "file:./Doctors24.db"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -9,10 +9,28 @@ generator client {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-  // Add additional fields as needed
+  id              Int       @id @default(autoincrement())
+  username        String    @unique
+  email           String    @unique
+  name            String
+  password        String
+  gender          String
+  age             Int
+  spokenLanguages String    // Stored as comma-separated values
+  location        String
+  ratePerMinute   Float
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  role            String    @default("USER") // Can be "USER", "DOCTOR" or "ADMIN"
+  isActive        Boolean   @default(true)
+  emailVerified   Boolean   @default(false)
+  verificationToken String?
+  tokenExpiry     DateTime?
+  resetToken      String?
+  resetTokenExpiry DateTime?
+  
+  // Add any additional relationships here if needed
+  // For example, if you need to store chat sessions, appointments, etc.
 }
 
 model Session {

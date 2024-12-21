@@ -1,57 +1,170 @@
-
 # Doctors24
 
 Doctors24 is a web application that allows users to view a list of doctors and initiate video calls for consultation, managing their sessions seamlessly.
+
 ## Features
 
-- User authentication (sign in and sign out)
-- View list of doctors
+### Authentication System
+- Secure signup with email verification
+- Sign in with rate limiting
+- Password reset functionality
 - Protected routes for authenticated users
+- CSRF protection
 
-## Technologies Used
+### User Management
+- Two types of users: Doctors and Patients
+- Comprehensive registration form including:
+  - Username and full name
+  - Email verification
+  - Password with security requirements
+  - Personal details (gender, age 18+, languages)
+  - Location information
+  - Rate per minute (for doctors)
+- User profile management
+- Session handling
 
-- JavaScript
-- SQL (SQLite)
+### Security Features
+- Password encryption (bcrypt)
+- CSRF protection
+- Rate limiting
+- Secure session management
+- Input validation and sanitization
+
+## Technical Stack
+
+### Frontend
+- Bootstrap 5 for responsive design
+- Handlebars templating engine
+- Vanilla JavaScript
+- Form validation
+
+### Backend
+- Node.js with Express
 - Prisma ORM
-- Bootstrap 5
-- Handlebars
+- SQLite database
+- Email service integration
 
 ## Project Setup
 
-
-
 1. Install dependencies:
-    ```sh
-    npm install
-    ```
+```sh
+npm install
+```
 
-2. Set up the database:
-    ```sh
-    npx prisma migrate dev --name init
-    ```
+2. Configure environment variables:
+```sh
+cp .env.example .env
+```
+Update .env with your settings:
+```
+DATABASE_URL="file:./dev.db"
+SMTP_HOST=your-smtp-host
+SMTP_PORT=your-smtp-port
+SMTP_USER=your-smtp-user
+SMTP_PASS=your-smtp-password
+APP_URL=http://localhost:3000
+```
 
-3. Seed the database:
-    ```sh
-    node prisma/seed.js
-    ```
+3. Initialize database:
+```sh
+# Create and apply migrations
+npx prisma migrate dev
 
-4. Start the development server:
-    ```sh
-    npm start
-    ```
+# Generate Prisma Client
+npx prisma generate
 
-## Usage
+# Seed the database with initial data (optional)
+npx prisma db seed
+```
 
-- Open your browser and navigate to `http://localhost:3000`.
-- Use the sign-in form to log in with the following credentials:
-    - Email: test
-    - Password: test
-- View the list of doctors and access protected routes.
+4. Start the server:
+```sh
+npm start
+```
+
+The application will be available at `http://localhost:3000`
 
 ## Project Structure
 
-- `prisma/schema.prisma`: Database schema definition.
-- `prisma/seed.js`: Script to seed the database with initial data.
-- `views/layouts/main.handlebars`: Main layout for the application.
-- `public/`: Static assets (CSS, JS, images).
-- `routes/`: Express routes for handling requests.
+```
+├── prisma/
+│   ├── schema.prisma    # Database schema
+│   ├── migrations/      # Database migrations
+│   └── seed.js         # Database seeding
+├── public/
+│   ├── js/             # Client-side JavaScript
+│   └── css/            # Stylesheets
+├── routes/
+│   └── auth.js         # Authentication routes
+├── services/
+│   └── emailService.js # Email functionality
+├── views/
+│   ├── layouts/        # Main layout
+│   └── partials/       # Reusable components
+└── server.js           # Application entry point
+```
+
+## Database Schema
+
+```prisma
+model User {
+  id              Int       @id @default(autoincrement())
+  username        String    @unique
+  email           String    @unique
+  name            String
+  password        String
+  gender          String
+  age             Int
+  spokenLanguages String
+  location        String
+  ratePerMinute   Float
+  role            String    @default("USER")
+  isActive        Boolean   @default(true)
+  emailVerified   Boolean   @default(false)
+  verificationToken String?
+  tokenExpiry     DateTime?
+  resetToken      String?
+  resetTokenExpiry DateTime?
+}
+```
+
+## Authentication Routes
+
+### Authentication
+- POST /auth/signup - Register new user
+- POST /auth/signin - User login
+- GET /auth/verify/:token - Email verification
+- POST /auth/forgot-password - Request password reset
+- POST /auth/reset-password/:token - Reset password
+
+## Security Measures
+
+- Passwords hashed using bcrypt (12 rounds)
+- CSRF tokens on all forms
+- Rate limiting on authentication endpoints
+- Input validation (client & server side)
+- Secure session cookies
+- Email verification required
+
+## Development Guidelines
+
+- Follow ESLint configuration
+- Use async/await for asynchronous operations
+- Validate all user inputs
+- Handle errors appropriately
+- Keep security best practices in mind
+
+## Testing
+
+Run tests using:
+```sh
+npm test
+```
+
+## Demo Account
+
+For testing purposes, you can use the following credentials:
+```
+Email: test
+Password: test
+```

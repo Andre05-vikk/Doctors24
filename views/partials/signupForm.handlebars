@@ -1,0 +1,114 @@
+<div class="modal fade" id="signup-modal" tabindex="-1" aria-labelledby="signup-modal-label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="signup-modal-label">Sign Up</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="signupForm">
+          <input type="hidden" name="_csrf" id="csrfToken">
+          <div class="alert alert-danger" id="signup-error" style="display: none;"></div>
+
+          <!-- First row -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Username *</label>
+              <input class="form-control" type="text" name="username" required minlength="3">
+              <div class="form-text text-danger username-error"></div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Full Name *</label>
+              <input class="form-control" type="text" name="name" required minlength="2">
+              <div class="form-text text-danger name-error"></div>
+            </div>
+          </div>
+
+          <!-- Second row -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Role *</label>
+              <select name="role" required class="form-select">
+                <option value="">Select role</option>
+                <option value="DOCTOR">Doctor</option>
+                <option value="USER">User</option>
+              </select>
+              <div class="form-text text-danger role-error"></div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email *</label>
+              <input class="form-control" type="email" name="email" required>
+              <div class="form-text text-danger email-error"></div>
+            </div>
+          </div>
+
+          <!-- Third row -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Password *</label>
+              <input class="form-control" type="password" name="password" required minlength="8">
+              <div class="form-text text-danger password-error"></div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Confirm Password *</label>
+              <input class="form-control" type="password" name="confirmPassword" required>
+              <div class="form-text text-danger confirm-password-error"></div>
+            </div>
+          </div>
+
+          <!-- Fourth row -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Gender *</label>
+              <select name="gender" required class="form-select">
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+              <div class="form-text text-danger gender-error"></div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Age *</label>
+              <input class="form-control" type="number" name="age" min="18" max="99" required>
+              <div class="form-text text-danger age-error"></div>
+            </div>
+          </div>
+
+          <!-- Fifth row -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Spoken Languages *</label>
+              <input class="form-control" type="text" name="languages" 
+                     placeholder="Enter languages separated by commas" required>
+              <div class="form-text text-danger languages-error"></div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Location *</label>
+              <input class="form-control" type="text" name="location" required>
+              <div class="form-text text-danger location-error"></div>
+            </div>
+          </div>
+
+          <!-- Sixth row -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Rate per minute ($) *</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input class="form-control" type="number" name="rate" 
+                       min="0.1" max="100" step="0.1" required>
+              </div>
+              <div class="form-text text-danger rate-error"></div>
+            </div>
+          </div>
+
+          <!-- Submit button -->
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div> 
