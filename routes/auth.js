@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const csrf = require('csurf');
 const crypto = require('crypto');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
+const validator = require('validator');
+const sanitize = require('sanitize-html');
 
 // CSRF protection middleware
 const csrfProtection = csrf({ cookie: true });
@@ -20,79 +21,138 @@ router.get('/signup', csrfProtection, (req, res) => {
 
 // Add input validation middleware
 const validateSignupInput = (req, res, next) => {
-    const { 
-        username,
-        email, 
-        password, 
-        name, 
-        gender, 
-        age, 
-        spokenLanguages, 
-        location, 
-        ratePerMinute,
-        role 
-    } = req.body;
+    try {
+        const { 
+            username,
+            email, 
+            password, 
+            confirmPassword,
+            name, 
+            gender, 
+            age, 
+            spokenLanguages, 
+            location, 
+            ratePerMinute,
+            role 
+        } = req.body;
 
-    const errors = [];
+        const errors = [];
+        const sanitizedData = {};
 
-    // Username validation
-    if (!username || username.length < 3) {
-        errors.push('Username must be at least 3 characters long');
-    }
+        // Username validation
+        if (!username || username.length < 3) {
+            errors.push('Username must be at least 3 characters long');
+        } else {
+            sanitizedData.username = sanitize(username.trim());
+            if (!/^[a-zA-Z0-9_-]+$/.test(sanitizedData.username)) {
+                errors.push('Username can only contain letters, numbers, underscores and hyphens');
+            }
+        }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        errors.push('Invalid email format');
-    }
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailRegex.test(email)) {
+            errors.push('Invalid email format');
+        } else {
+            sanitizedData.email = validator.normalizeEmail(email.toLowerCase());
+        }
 
-    // Age validation
-    const ageNum = parseInt(age);
-    if (isNaN(ageNum) || ageNum < 18 || ageNum > 99) {
-        errors.push('Age must be between 18 and 99');
-    }
+        // Age validation
+        const ageNum = parseInt(age);
+        if (isNaN(ageNum) || ageNum < 18 || ageNum > 99) {
+            errors.push('Age must be between 18 and 99');
+        } else {
+            sanitizedData.age = parseInt(age, 10);
+        }
 
-    // Role validation
-    const validRoles = ['USER', 'DOCTOR'];
-    if (!validRoles.includes(role)) {
-        errors.push('Invalid role selection');
-    }
+        // Role validation
+        const validRoles = ['USER', 'DOCTOR'];
+        if (!role || !validRoles.includes(role.toUpperCase())) {
+            errors.push('Invalid role selection');
+        } else {
+            sanitizedData.role = role.toUpperCase();
+        }
 
-    // Password validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-        errors.push('Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters');
-    }
+        // Password validation
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+        if (!password || !passwordRegex.test(password)) {
+            errors.push('Password must contain at least 8 characters...');
+        } else if (password !== confirmPassword) {
+            errors.push('Passwords do not match');
+        } else {
+            sanitizedData.password = password;
+        }
 
-    // Name validation
-    if (!name || name.length < 2) {
-        errors.push('Name must be at least 2 characters long');
-    }
+        // Name validation
+        if (!name || name.length < 2) {
+            errors.push('Name must be at least 2 characters long');
+        } else {
+            sanitizedData.name = sanitize(name.trim());
+            if (!/^[a-zA-Z\s-]+$/.test(sanitizedData.name)) {
+                errors.push('Name can only contain letters, spaces and hyphens');
+            }
+        }
 
-    // Gender validation
-    const validGenders = ['male', 'female', 'other'];
-    if (!validGenders.includes(gender.toLowerCase())) {
-        errors.push('Invalid gender selection');
-    }
+        // Gender validation
+        const validGenders = ['male', 'female', 'other'];
+        if (!gender || !validGenders.includes(gender.toLowerCase())) {
+            errors.push('Invalid gender selection');
+        } else {
+            sanitizedData.gender = gender.toLowerCase();
+        }
 
-    // Languages validation
-    if (!spokenLanguages || spokenLanguages.trim() === '') {
-        errors.push('At least one language must be specified');
-    }
+        // Languages validation
+        if (!spokenLanguages || spokenLanguages.trim() === '') {
+            errors.push('At least one language must be specified');
+        } else {
+            let languagesArray = Array.isArray(spokenLanguages) 
+                ? spokenLanguages 
+                : spokenLanguages.split(',');
+            
+            sanitizedData.spokenLanguages = languagesArray
+                .map(lang => sanitize(lang.trim()))
+                .filter(lang => lang.length > 0);
 
-    // Location validation
-    if (!location || location.trim() === '') {
-        errors.push('Location is required');
-    }
+            if (sanitizedData.spokenLanguages.length === 0) {
+                errors.push('At least one valid language must be specified');
+            }
+        }
 
-    if (errors.length > 0) {
-        return res.status(400).json({ 
-            message: 'Validation failed', 
-            errors 
+        // Location validation
+        if (!location || location.trim() === '') {
+            errors.push('Location is required');
+        } else {
+            sanitizedData.location = sanitize(location.trim());
+        }
+
+        // Rate validation (required for doctors)
+        if (sanitizedData.role === 'DOCTOR') {
+            const rate = parseFloat(ratePerMinute);
+            if (!ratePerMinute || isNaN(rate) || rate <= 0) {
+                errors.push('Valid rate per minute is required for doctors');
+            } else {
+                sanitizedData.ratePerMinute = parseFloat(ratePerMinute);
+            }
+        }
+
+        if (errors.length > 0) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Validation failed', 
+                errors 
+            });
+        }
+
+        // Attach sanitized data to request object
+        req.sanitizedData = sanitizedData;
+        next();
+
+    } catch (error) {
+        return res.status(500).json({ 
+            success: false,
+            message: 'Internal server error during validation'
         });
     }
-
-    next();
 };
 
 // Rate limiting middleware
@@ -164,7 +224,6 @@ router.post('/signup', signupLimiter, csrfProtection, validateSignupInput, async
 
         // Send verification email
         await sendVerificationEmail(email, verificationToken);
-
         // Don't send back the full user object for security
         res.status(201).json({ 
             message: 'Registration successful. Please check your email to verify your account.',
@@ -274,7 +333,7 @@ router.post('/reset-password/:token', resetPasswordLimiter, csrfProtection, asyn
         }
 
         // Validate password
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
         if (!passwordRegex.test(password)) {
             return res.status(400).json({ 
                 message: 'Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters' 
@@ -297,7 +356,6 @@ router.post('/reset-password/:token', resetPasswordLimiter, csrfProtection, asyn
             showLogin: true
         });
     } catch (error) {
-        console.error('Password reset error:', error);
         res.render('auth/error', {
             message: 'Failed to reset password. Please try again.',
             showRetry: true,
@@ -332,7 +390,6 @@ router.get('/reset-password/:token', csrfProtection, async (req, res) => {
             token
         });
     } catch (error) {
-        console.error('Reset password page error:', error);
         res.render('auth/error', {
             message: 'Error loading reset password page',
             showRetry: false
@@ -340,4 +397,10 @@ router.get('/reset-password/:token', csrfProtection, async (req, res) => {
     }
 });
 
+// CSRF token endpoint
+router.post('/csrf-token', csrfProtection, (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+});
+
 module.exports = router; 
+

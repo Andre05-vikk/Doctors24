@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Optional Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <meta name="csrf-token" content="{{csrfToken}}">
 </head>
 <body>
 <!-- Navbar -->
@@ -38,7 +39,8 @@
             </div>
           {{else}}
             <form action="/auth/signout" method="post" style="display:inline;">
-              <button type="submit" class="btn btn-outline-secondary">Sign Out</button>
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <button type="submit" class="btn btn-outline-secondary">Sign Out</button>
             </form>
           {{/unless}}
         </div>
@@ -74,6 +76,5 @@
 <!-- Add this before closing body tag -->
 <script src="/js/signup.js"></script>
 <script src="/js/passwordReset.js"></script>
-<script src="/js/signin.js"></script>
 </body>
 </html>

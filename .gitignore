@@ -4,3 +4,33 @@ prisma/Doctors24.db
 qodana.sarif.json
 qodana.yaml
 .env
+
+# Database
+prisma/*.db
+prisma/*.db-journal
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# Environment files
+.env.local
+.env.*.local
+
+# Debug
+.debug/

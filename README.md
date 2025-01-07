@@ -2,169 +2,146 @@
 
 Doctors24 is a web application that allows users to view a list of doctors and initiate video calls for consultation, managing their sessions seamlessly.
 
+## Table of Contents
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Setup & Installation](#setup--installation)
+- [Development](#development)
+- [Security](#security)
+
 ## Features
-
-### Authentication System
-- Secure signup with email verification
-- Sign in with rate limiting
+### Authentication & User Management
+- User registration with validation:
+  - Personal info (Name, Email, Gender, Age)
+  - Professional info (Languages, Location, Rate/minute)
+  - Role-based access (User/Doctor/Admin)
+- Session-based authentication
 - Password reset functionality
-- Protected routes for authenticated users
-- CSRF protection
-
-### User Management
-- Two types of users: Doctors and Patients
-- Comprehensive registration form including:
-  - Username and full name
-  - Email verification
-  - Password with security requirements
-  - Personal details (gender, age 18+, languages)
-  - Location information
-  - Rate per minute (for doctors)
-- User profile management
-- Session handling
+- Email verification
+- Protected routes:
+  - Access control for authenticated users
+  - Automatic redirect for unauthorized access
+  - Session validation
 
 ### Security Features
-- Password encryption (bcrypt)
 - CSRF protection
 - Rate limiting
+- Input validation & sanitization
 - Secure session management
-- Input validation and sanitization
 
-## Technical Stack
-
-### Frontend
-- Bootstrap 5 for responsive design
-- Handlebars templating engine
-- Vanilla JavaScript
-- Form validation
-
+## Tech Stack
 ### Backend
 - Node.js with Express
 - Prisma ORM
 - SQLite database
+- Handlebars templating
 - Email service integration
 
-## Project Setup
-
-1. Install dependencies:
-```sh
-npm install
-```
-
-2. Configure environment variables:
-```sh
-cp .env.example .env
-```
-Update .env with your settings:
-```
-DATABASE_URL="file:./dev.db"
-SMTP_HOST=your-smtp-host
-SMTP_PORT=your-smtp-port
-SMTP_USER=your-smtp-user
-SMTP_PASS=your-smtp-password
-APP_URL=http://localhost:3000
-```
-
-3. Initialize database:
-```sh
-# Create and apply migrations
-npx prisma migrate dev
-
-# Generate Prisma Client
-npx prisma generate
-
-# Seed the database with initial data (optional)
-npx prisma db seed
-```
-
-4. Start the server:
-```sh
-npm start
-```
-
-The application will be available at `http://localhost:3000`
+### Frontend
+- Bootstrap 5
+- Vanilla JavaScript
+- Form validation
 
 ## Project Structure
-
 ```
+.
+├── lib/
+│   └── prisma.js          # Prisma client singleton
 ├── prisma/
-│   ├── schema.prisma    # Database schema
-│   ├── migrations/      # Database migrations
-│   └── seed.js         # Database seeding
+│   ├── schema.prisma      # Database schema
+│   ├── seed.js            # Database seeding
+│   └── migrations/        # Database migrations
 ├── public/
-│   ├── js/             # Client-side JavaScript
-│   └── css/            # Stylesheets
+│   └── js/
+│       ├── signup.js      # Client-side validation
+│       └── passwordReset.js
 ├── routes/
-│   └── auth.js         # Authentication routes
+│   └── auth.js           # Authentication routes
 ├── services/
-│   └── emailService.js # Email functionality
+│   └── emailService.js   # Email functionality
 ├── views/
-│   ├── layouts/        # Main layout
-│   └── partials/       # Reusable components
-└── server.js           # Application entry point
+│   ├── layouts/
+│   │   └── main.handlebars      # Base layout template
+│   ├── partials/
+│   │   ├── signinForm.handlebars       # Login form
+│   │   ├── signupForm.handlebars       # Registration form
+│   │   ├── resetPasswordForm.handlebars # Password reset
+│   │   └── forgotPasswordForm.handlebars # Forgot password
+│   ├── protected.handlebars     # Protected page for authenticated users
+│   └── auth/
+│       ├── success.handlebars    # Success messages
+│       └── error.handlebars      # Error handling
+├── app.js                # Main application file
+└── package.json
 ```
 
-## Database Schema
+## Setup & Installation
+1. **Dependencies**
+   ```bash
+   npm install
+   ```
 
-```prisma
-model User {
-  id              Int       @id @default(autoincrement())
-  username        String    @unique
-  email           String    @unique
-  name            String
-  password        String
-  gender          String
-  age             Int
-  spokenLanguages String
-  location        String
-  ratePerMinute   Float
-  role            String    @default("USER")
-  isActive        Boolean   @default(true)
-  emailVerified   Boolean   @default(false)
-  verificationToken String?
-  tokenExpiry     DateTime?
-  resetToken      String?
-  resetTokenExpiry DateTime?
-}
-```
+2. **Environment Setup**
+   ```bash
+   cp .env.example .env
+   ```
+   Required variables:
+   ```env
+   DATABASE_URL="file:./dev.db"
+   PORT=3000
+   SESSION_SECRET="your-secret"
+   SMTP_HOST=your-smtp-host
+   SMTP_PORT=your-smtp-port
+   SMTP_USER=your-smtp-user
+   SMTP_PASS=your-smtp-password
+   APP_URL=http://localhost:3000
+   ```
 
-## Authentication Routes
+3. **Database Initialization**
+   ```bash
+   npx prisma migrate dev
+   npx prisma db seed
+   ```
 
-### Authentication
-- POST /auth/signup - Register new user
-- POST /auth/signin - User login
-- GET /auth/verify/:token - Email verification
-- POST /auth/forgot-password - Request password reset
-- POST /auth/reset-password/:token - Reset password
+4. **Start Application**
+   ```bash
+   npm run start
+   ```
+   Server runs at: http://localhost:3000
 
-## Security Measures
+## Development
+### Available Scripts
+- `npm run start` - Start development server
+- `npx prisma studio` - Database management UI
+- `npx prisma migrate reset` - Reset database
+- `DEBUG=* npm run start` - Run with debug output
 
-- Passwords hashed using bcrypt (12 rounds)
-- CSRF tokens on all forms
-- Rate limiting on authentication endpoints
-- Input validation (client & server side)
-- Secure session cookies
-- Email verification required
+### Test Accounts
+- Doctor:
+  - Email: test@test.com
+  - Password: Test123!@#
+- User:
+  - Email: doctor2@example.com
+  - Password: Test123!@#
+- Admin:
+  - Email: admin@example.com
+  - Password: Admin123!@#
 
-## Development Guidelines
+## Security
+- SQLite with Prisma ORM
+- Bcrypt password hashing (12 rounds)
+- CSRF protection
+- Input sanitization
+- Rate limiting
+- Session management
 
-- Follow ESLint configuration
-- Use async/await for asynchronous operations
-- Validate all user inputs
-- Handle errors appropriately
-- Keep security best practices in mind
+### Email Configuration
+The application uses Nodemailer for sending emails:
+- Registration confirmation
+- Password reset links
+- Email verification
 
-## Testing
-
-Run tests using:
-```sh
-npm test
-```
-
-## Demo Account
-
-For testing purposes, you can use the following credentials:
-```
-Email: test
-Password: test
-```
+For development, you can use:
+- [Ethereal Email](https://ethereal.email/) for testing
+- Real SMTP server for production

@@ -11,22 +11,35 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendVerificationEmail = async (email, token) => {
-    const verificationUrl = `${process.env.APP_URL}/auth/verify/${token}`;
-    
-    const mailOptions = {
-        from: '"Doctors24" <noreply@doctors24.com>',
-        to: email,
-        subject: 'Verify your email address',
-        html: `
-            <h1>Welcome to Doctors24!</h1>
-            <p>Please click the link below to verify your email address:</p>
-            <a href="${verificationUrl}">${verificationUrl}</a>
-            <p>This link will expire in 24 hours.</p>
-        `
-    };
+// Check email configuration
+if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn('Email service configuration missing. Using test account.');
+}
 
-    return transporter.sendMail(mailOptions);
+const sendVerificationEmail = async (email, token) => {
+    try {
+        // Log email attempt (ilma tokenita)
+        console.log(`Sending verification email to: ${email.split('@')[0]}***`);
+        
+        const verificationUrl = `${process.env.APP_URL}/auth/verify/${token}`;
+        
+        const mailOptions = {
+            from: '"Doctors24" <noreply@doctors24.com>',
+            to: email,
+            subject: 'Verify your email address',
+            html: `
+                <h1>Welcome to Doctors24!</h1>
+                <p>Please click the link below to verify your email address:</p>
+                <a href="${verificationUrl}">${verificationUrl}</a>
+                <p>This link will expire in 24 hours.</p>
+            `
+        };
+
+        return await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Failed to send verification email:', error);
+        throw new Error('Failed to send verification email');
+    }
 };
 
 const sendPasswordResetEmail = async (email, token) => {

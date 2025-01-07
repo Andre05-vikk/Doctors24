@@ -1,2 +1,53 @@
-<h1>Protected Content</h1>
-<p>You can only see this if you are signed in.</p>
+<div class="container mt-4">
+    <!-- Main doctor card -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div style="height: 300px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
+                        Photo
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="speciality" class="form-label">Speciality</label>
+                            <input type="text" class="form-control" id="speciality" placeholder="Speciality">
+                        </div>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" placeholder="Name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="age" class="form-label">Age</label>
+                            <input type="text" class="form-control" id="age" placeholder="Age">
+                        </div>
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="text" class="form-control" id="price" placeholder="Price">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid of smaller doctor cards -->
+    <div class="row g-4">
+        {{#times 8}}
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div style="height: 150px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
+                        Photo
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/times}}
+    </div>
+</div>
