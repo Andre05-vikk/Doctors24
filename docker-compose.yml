@@ -1,9 +1,59 @@
-
 services:
-  web:
-    build: .
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: doctors24
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
     ports:
-      - "3000:3000"
+      - "3306:3306"
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: doctors24
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: doctors24
+    ports:
+      - "27017:27017"
     volumes:
-      - .:/app
-    command: npm start
+      - ./sql/mongodb/init.js:/docker-entrypoint-initdb.d/init.js:ro
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+
+  mssql:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    platform: linux/arm64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourStrong!Passw0rd"
+    ports:
+      - "1433:1433"
+
+volumes:
+  redis_data:
