@@ -1,0 +1,30 @@
+# Arstide põhiandmed
+SET doctor:1:name "Dr. John Smith"
+SET doctor:1:rate "2.50"
+SET doctor:1:specialty "Cardiology"
+SET doctor:2:name "Dr. Sarah Johnson"
+SET doctor:2:rate "3.00"
+SET doctor:2:specialty "Neurology"
+SET doctor:3:name "Dr. Michael Brown"
+SET doctor:3:rate "2.75"
+SET doctor:3:specialty "Pediatrics"
+
+# Keeled
+LPUSH doctor:1:languages "English" "Spanish" "French"
+LPUSH doctor:2:languages "English" "German" "Russian"
+LPUSH doctor:3:languages "English" "Chinese" "Japanese"
+
+# Profiilid
+HSET doctor:1:profile name "Dr. John Smith" gender "male" age "35" location "New York" active "true"
+HSET doctor:2:profile name "Dr. Sarah Johnson" gender "female" age "42" location "London" active "true"
+HSET doctor:3:profile name "Dr. Michael Brown" gender "male" age "38" location "Toronto" active "true"
+
+# Patsientide statistika
+ZADD doctor:patients 150 "doctor:1"
+ZADD doctor:patients 200 "doctor:2"
+ZADD doctor:patients 175 "doctor:3"
+
+# Erialad
+SADD specialty:cardiology "doctor:1"
+SADD specialty:neurology "doctor:2"
+SADD specialty:pediatrics "doctor:3" 
