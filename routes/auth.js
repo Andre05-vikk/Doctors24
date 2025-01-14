@@ -178,7 +178,9 @@ const resetPasswordLimiter = rateLimit({
 // Apply rate limiting and CSRF protection to signup route
 router.post('/signup', signupLimiter, csrfProtection, validateSignupInput, async (req, res) => {
     try {
+        console.log('Sanitized data:', req.sanitizedData);
         const {
+            username,
             email,
             password,
             name,
@@ -186,16 +188,26 @@ router.post('/signup', signupLimiter, csrfProtection, validateSignupInput, async
             age,
             spokenLanguages,
             location,
-            ratePerMinute
+            ratePerMinute,
+            role
         } = req.body;
 
         // Check if user already exists
-        const existingUser = await prisma.user.findUnique({
-            where: { email }
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email },
+                    { username }
+                ]
+            }
         });
 
         if (existingUser) {
-            return res.status(400).json({ message: 'Email already registered' });
+            return res.status(400).json({ 
+                message: existingUser.email === email 
+                    ? 'Email already registered' 
+                    : 'Username already taken' 
+            });
         }
 
         // Generate verification token
@@ -208,6 +220,7 @@ router.post('/signup', signupLimiter, csrfProtection, validateSignupInput, async
         // Create new user
         const user = await prisma.user.create({
             data: {
+                username,
                 email,
                 password: hashedPassword,
                 name,
@@ -216,6 +229,7 @@ router.post('/signup', signupLimiter, csrfProtection, validateSignupInput, async
                 spokenLanguages,
                 location,
                 ratePerMinute: parseFloat(ratePerMinute),
+                role: role.toUpperCase(),
                 verificationToken,
                 tokenExpiry,
                 emailVerified: false
@@ -230,7 +244,11 @@ router.post('/signup', signupLimiter, csrfProtection, validateSignupInput, async
             userId: user.id
         });
     } catch (error) {
-        console.error('Registration error:', error);
+        console.error('Registration error details:', {
+            error: error.message,
+            stack: error.stack,
+            body: req.body
+        });
         res.status(500).json({ message: 'Registration failed' });
     }
 });

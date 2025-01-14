@@ -1,7 +1,7 @@
 <form id="signin-form" method="POST">
     <input type="hidden" name="_csrf" id="signinCsrfToken" value="{{csrfToken}}">
     <div class="mb-3">
-        <input type="text" class="form-control" id="signin-email" placeholder="Enter your email" required value="test@test.com">
+        <input type="text" class="form-control" id="signin-email" placeholder="Enter your email or username" required value="test@test.com">
     </div>
     <div class="mb-3">
         <input type="password" class="form-control" id="signin-password" placeholder="Enter password" required value="Test123!@#">
@@ -15,7 +15,7 @@
 <script>
     document.getElementById('signin-form').addEventListener('submit', async e => {
         e.preventDefault();
-        const email = e.target.querySelector('#signin-email').value;
+        const identifier = e.target.querySelector('#signin-email').value;
         const password = e.target.querySelector('#signin-password').value;
 
         const res = await fetch('/api/sessions', {
@@ -24,7 +24,7 @@
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': document.getElementById('signinCsrfToken').value
             },
-            body: JSON.stringify({email, password})
+            body: JSON.stringify({identifier, password})
         });
 
         if (res.ok) {
@@ -50,9 +50,9 @@
             
             err.innerText = errorMessage;
         }
-    });
 
         const modal = document.getElementById('signin-modal');
         modal.addEventListener('shown.bs.modal', () => modal.removeAttribute('aria-hidden'));
         modal.addEventListener('hidden.bs.modal', () => modal.setAttribute('aria-hidden', 'true'));
+    });
 </script>

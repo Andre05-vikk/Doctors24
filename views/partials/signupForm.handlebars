@@ -6,8 +6,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="signupForm" method="POST" action="/auth/signup">
-          <input type="hidden" name="_csrf" id="csrfToken" value="{{csrfToken}}">
+        <form id="signupForm" method="POST">
+          <input type="hidden" name="_csrf" id="signupCsrfToken" value="{{csrfToken}}">
           <div class="alert alert-danger" id="signup-error" style="display: none;"></div>
 
           <!-- First row -->
@@ -109,4 +109,38 @@
       </div>
     </div>
   </div>
-</div> 
+</div>
+
+<script>
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+      const response = await fetch('/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.getElementById('signupCsrfToken').value
+        },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        alert(result.message);
+        window.location.href = '/';
+      } else {
+        document.getElementById('signup-error').style.display = 'block';
+        document.getElementById('signup-error').textContent = result.message;
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      document.getElementById('signup-error').style.display = 'block';
+      document.getElementById('signup-error').textContent = 'Registration failed. Please try again.';
+    }
+  });
+</script> 

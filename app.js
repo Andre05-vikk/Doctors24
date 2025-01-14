@@ -122,9 +122,17 @@ app.get('/protected', (req, res) => {
 
 // Auth endpoints
 app.post('/api/sessions', async (req, res) => {
-    const {email, password} = req.body;
-
-    const user = await prisma.user.findUnique({where: {email}});
+    const {identifier, password} = req.body;
+    
+    const user = await prisma.user.findFirst({
+        where: {
+            OR: [
+                { email: identifier },
+                { username: identifier }
+            ]
+        }
+    });
+    
     if (user && await bcrypt.compare(password, user.password)) {
         req.session.data.userId = user.id;
         await prisma.session.update({
@@ -133,7 +141,7 @@ app.post('/api/sessions', async (req, res) => {
         });
         return res.sendStatus(200);
     }
-
+    
     return res.sendStatus(401);
 });
 
